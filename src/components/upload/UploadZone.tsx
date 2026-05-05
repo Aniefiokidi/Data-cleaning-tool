@@ -13,7 +13,7 @@ interface Props {
 }
 
 export const UploadZone: React.FC<Props> = ({ open, onClose }) => {
-  const { parseUploadFile, setRawDataset, setBiometricFiles, state } = usePipeline();
+  const { parseUploadFile, setRawDataset, runPipeline, setBiometricFiles, state } = usePipeline();
   const [file, setFile] = useState<File | null>(null);
   const [biometricFiles, setLocalBiometricFiles] = useState<File[]>([]);
   const [uploadIntent, setUploadIntent] = useState<'BOTH' | 'SYSTEM' | 'OPENBQ'>('SYSTEM');
@@ -73,6 +73,14 @@ export const UploadZone: React.FC<Props> = ({ open, onClose }) => {
 
       setRawDataset(dataset);
       setBiometricFiles(uploadIntent === 'SYSTEM' ? [] : biometricFiles);
+
+      if (uploadIntent === 'OPENBQ') {
+        await runPipeline(dataset, biometricFiles, 'OPENBQ_ONLY');
+        onClose();
+        navigate('/dashboard');
+        return;
+      }
+
       onClose();
       navigate('/review');
     } catch (error) {
