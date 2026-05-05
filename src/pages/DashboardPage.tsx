@@ -43,6 +43,12 @@ const ScoreRingMini: React.FC<{ score: number }> = ({ score }) => {
   );
 };
 
+const openBqInsights = (diagnostics: string[]) => {
+  const issues = diagnostics.filter((d) => /fail|low|blur|noise|shadow|occlu|poor|wrong|not|insufficient/i.test(d));
+  const improvements = diagnostics.filter((d) => /improve|recommend|retake|ensure|increase|better|adjust|should/i.test(d));
+  return { issues, improvements };
+};
+
 export const DashboardPage = () => {
   const { state, stats, setFilters } = usePipeline();
   const usingProvider = state.processedRecords.find((record) => record.biometricQuality)?.biometricQuality?.provider;
@@ -90,6 +96,15 @@ export const DashboardPage = () => {
                       {record.id} • {record.biometricQuality?.modality.toUpperCase()} • {record.biometricQuality?.status} • Score {record.biometricQuality?.score}
                     </p>
                     <p className="truncate text-slate-500 dark:text-slate-300">{record.biometricQuality?.sourceFile || 'No file name available'}</p>
+                    {record.biometricQuality ? (() => {
+                      const details = openBqInsights(record.biometricQuality.diagnostics);
+                      return (
+                        <>
+                          <p className="mt-1 line-clamp-2 text-[11px] text-rose-600">Problems: {details.issues.length ? details.issues.join(' • ') : 'No major issues detected.'}</p>
+                          <p className="mt-1 line-clamp-2 text-[11px] text-blue-700">Improve: {details.improvements.length ? details.improvements.join(' • ') : 'Use steady lighting and sharper focus.'}</p>
+                        </>
+                      );
+                    })() : null}
                     {record.biometricQuality?.previewImageUrl ? (
                       <img
                         src={record.biometricQuality.previewImageUrl}

@@ -9,6 +9,7 @@ const DuplicatesPage = lazy(() => import('./pages/DuplicatesPage').then((m) => (
 const RulesPage = lazy(() => import('./pages/RulesPage').then((m) => ({ default: m.RulesPage })));
 const ReportsPage = lazy(() => import('./pages/ReportsPage').then((m) => ({ default: m.ReportsPage })));
 const AuditPage = lazy(() => import('./pages/AuditPage').then((m) => ({ default: m.AuditPage })));
+const ReviewPage = lazy(() => import('./pages/ReviewPage').then((m) => ({ default: m.ReviewPage })));
 
 const getInitialTheme = () => {
   const stored = localStorage.getItem('obq-theme');
@@ -44,6 +45,7 @@ const App = () => {
           <Route path="table" element={<Suspense fallback={RouteSkeleton}><TablePage /></Suspense>} />
           <Route path="duplicates" element={<Suspense fallback={RouteSkeleton}><DuplicatesPage /></Suspense>} />
           <Route path="rules" element={<Suspense fallback={RouteSkeleton}><RulesPage /></Suspense>} />
+          <Route path="review" element={<Suspense fallback={RouteSkeleton}><ReviewPage /></Suspense>} />
           <Route path="reports" element={<Suspense fallback={RouteSkeleton}><ReportsPage /></Suspense>} />
           <Route path="audit" element={<Suspense fallback={RouteSkeleton}><AuditPage /></Suspense>} />
         </Route>

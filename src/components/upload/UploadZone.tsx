@@ -13,7 +13,7 @@ interface Props {
 }
 
 export const UploadZone: React.FC<Props> = ({ open, onClose }) => {
-  const { parseUploadFile, runPipeline, setBiometricFiles, state } = usePipeline();
+  const { parseUploadFile, setRawDataset, runPipeline, setBiometricFiles, state } = usePipeline();
   const [file, setFile] = useState<File | null>(null);
   const [biometricFiles, setLocalBiometricFiles] = useState<File[]>([]);
   const [uploadIntent, setUploadIntent] = useState<'BOTH' | 'SYSTEM' | 'OPENBQ'>('SYSTEM');
@@ -71,11 +71,18 @@ export const UploadZone: React.FC<Props> = ({ open, onClose }) => {
         dataset = rawFromBiometricFiles();
       }
 
-      setBiometricFiles(biometricFiles);
-      const mode = uploadIntent === 'OPENBQ' ? 'OPENBQ_ONLY' : uploadIntent === 'SYSTEM' ? 'SYSTEM_ONLY' : 'FULL';
-      await runPipeline(dataset, uploadIntent === 'SYSTEM' ? [] : biometricFiles, mode);
+      setRawDataset(dataset);
+      setBiometricFiles(uploadIntent === 'SYSTEM' ? [] : biometricFiles);
+
+      if (uploadIntent === 'OPENBQ') {
+        await runPipeline(dataset, biometricFiles, 'OPENBQ_ONLY');
+        onClose();
+        navigate('/dashboard');
+        return;
+      }
+
       onClose();
-      navigate('/dashboard');
+      navigate('/review');
     } catch (error) {
       const message = String(error);
       if (!message.includes('Pipeline failed:')) toast.error(`Processing failed: ${message}`);
@@ -184,7 +191,7 @@ export const UploadZone: React.FC<Props> = ({ open, onClose }) => {
             type="button"
             disabled={!canStartProcessing}
           >
-            {isSubmitting ? 'Processing...' : 'Run pipeline'}
+            {isSubmitting ? 'Preparing...' : 'Next: Review data'}
           </button>
         </div>
       </div>
