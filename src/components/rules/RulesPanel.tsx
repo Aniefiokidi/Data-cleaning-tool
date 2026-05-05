@@ -76,8 +76,13 @@ export const RulesPanel = () => {
   const applyTemplate = (template: (typeof QUICK_TEMPLATES)[number]) => {
     setScope(template.scope);
     setRuleName(template.label);
+    if (columns.length) {
+      setTargetColumn(columns[0].key);
+      setCompareColumn(columns[Math.min(1, columns.length - 1)].key);
+    }
     if (template.scope === 'FIELD') setFieldOperator(template.operator as FieldRuleOperator);
     if (template.scope === 'CROSS_FIELD') setCrossOperator(template.operator as (typeof CROSS_OPERATORS)[number]['value']);
+    if (template.scope === 'DUPLICATE' && columns.length) setDuplicateColumns([columns[0].key]);
   };
 
   const toggleDuplicateColumn = (column: string) => {

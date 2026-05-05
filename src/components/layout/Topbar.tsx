@@ -10,6 +10,7 @@ const titleFromPath = (path: string) => {
   if (path === '/table') return 'Results Table';
   if (path === '/duplicates') return 'Duplicates';
   if (path === '/rules') return 'Rules Builder';
+  if (path === '/review') return 'Upload Review';
   if (path === '/reports') return 'Reports';
   if (path === '/audit') return 'Audit Log';
   return 'Dashboard';
@@ -20,6 +21,7 @@ const subtitleFromPath = (path: string) => {
   if (path === '/table') return 'Review flagged rows and apply fixes.';
   if (path === '/duplicates') return 'See records that match across selected columns.';
   if (path === '/reports') return 'Summaries and exports for cleaned data.';
+  if (path === '/review') return 'Inspect rows and columns before running the cleaning pipeline.';
   if (path === '/audit') return 'Every important action taken on the dataset.';
   return 'Track data quality after each upload and pipeline run.';
 };

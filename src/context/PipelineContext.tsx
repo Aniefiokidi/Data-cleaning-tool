@@ -120,6 +120,7 @@ interface PipelineContextValue {
   runPipeline: (dataset?: ImportedDataset, biometricFiles?: File[], mode?: 'FULL' | 'SYSTEM_ONLY' | 'OPENBQ_ONLY') => Promise<void>;
   updateRuleConfig: (next: RuleConfig[]) => void;
   parseUploadFile: (file: File) => Promise<ImportedDataset>;
+  setRawDataset: (dataset: ImportedDataset) => void;
   setBiometricFiles: (files: File[]) => void;
   biometricFilesCount: number;
   acceptSuggestedField: (recordId: string, field: string) => void;
@@ -670,6 +671,10 @@ export const PipelineProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     throw new Error('Unsupported file type. Allowed: CSV, XLSX/XLS, PDF, JSON, TXT, TSV.');
   };
 
+  const setRawDataset = (dataset: ImportedDataset) => {
+    dispatch({ type: 'SET_RAW_DATA', payload: dataset });
+  };
+
   const runPipeline = async (
     dataset: ImportedDataset = { records: state.rawRecords, columns: state.columns },
     biometricPayload: File[] = biometricFiles,
@@ -1114,6 +1119,7 @@ export const PipelineProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         runPipeline,
         updateRuleConfig,
         parseUploadFile,
+        setRawDataset,
         setBiometricFiles,
         biometricFilesCount: biometricFiles.length,
         acceptSuggestedField,
