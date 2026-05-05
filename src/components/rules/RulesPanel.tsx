@@ -45,6 +45,7 @@ export const RulesPanel = () => {
   const [compareColumn, setCompareColumn] = useState('');
   const [crossOperator, setCrossOperator] = useState<(typeof CROSS_OPERATORS)[number]['value']>('matches_column');
   const [duplicateColumns, setDuplicateColumns] = useState<string[]>([]);
+  const [rowScopeText, setRowScopeText] = useState('');
 
   const generatedRuleId = useMemo(() => {
     const prefix = scope === 'FIELD' ? 'RULE' : scope === 'CROSS_FIELD' ? 'XREF' : 'DUP';
@@ -76,8 +77,13 @@ export const RulesPanel = () => {
   const applyTemplate = (template: (typeof QUICK_TEMPLATES)[number]) => {
     setScope(template.scope);
     setRuleName(template.label);
+    if (columns.length) {
+      setTargetColumn(columns[0].key);
+      setCompareColumn(columns[Math.min(1, columns.length - 1)].key);
+    }
     if (template.scope === 'FIELD') setFieldOperator(template.operator as FieldRuleOperator);
     if (template.scope === 'CROSS_FIELD') setCrossOperator(template.operator as (typeof CROSS_OPERATORS)[number]['value']);
+    if (template.scope === 'DUPLICATE' && columns.length) setDuplicateColumns([columns[0].key]);
   };
 
   const toggleDuplicateColumn = (column: string) => {
@@ -96,6 +102,7 @@ export const RulesPanel = () => {
     setCompareColumn('');
     setCrossOperator('matches_column');
     setDuplicateColumns([]);
+    setRowScopeText('');
   };
 
   const saveRule = () => {
@@ -118,6 +125,9 @@ export const RulesPanel = () => {
       value: scope === 'FIELD' && doesFieldOperatorNeedValue(fieldOperator) ? fieldValue.trim() : undefined,
       compareColumn: scope === 'CROSS_FIELD' ? compareColumn : undefined,
       columns: scope === 'DUPLICATE' ? duplicateColumns : undefined,
+      applyToRows: rowScopeText.trim()
+        ? Array.from(new Set(rowScopeText.split(',').map((item) => Number(item.trim())).filter((item) => Number.isInteger(item) && item > 0)))
+        : undefined,
     };
 
     updateRuleConfig([...state.ruleConfig, nextRule]);
@@ -280,6 +290,15 @@ export const RulesPanel = () => {
               ) : null}
 
               <div className="rounded-2xl border border-sky-100 bg-sky-50/70 p-4 text-sm text-slate-700 dark:border-sky-900/40 dark:bg-sky-900/20 dark:text-slate-200">
+                <label className="mb-3 block space-y-2">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Optional row scope</span>
+                  <input
+                    className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+                    placeholder="Example: 1,2,18 (leave blank to apply to all rows)"
+                    value={rowScopeText}
+                    onChange={(event) => setRowScopeText(event.target.value)}
+                  />
+                </label>
                 <p className="font-semibold">How to choose a rule type</p>
                 <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-slate-600 dark:text-slate-300">
                   <li><strong>Single column:</strong> Check one field like email, phone, ID, or required values.</li>

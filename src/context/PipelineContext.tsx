@@ -120,6 +120,7 @@ interface PipelineContextValue {
   runPipeline: (dataset?: ImportedDataset, biometricFiles?: File[], mode?: 'FULL' | 'SYSTEM_ONLY' | 'OPENBQ_ONLY') => Promise<void>;
   updateRuleConfig: (next: RuleConfig[]) => void;
   parseUploadFile: (file: File) => Promise<ImportedDataset>;
+  setRawDataset: (dataset: ImportedDataset) => void;
   setBiometricFiles: (files: File[]) => void;
   biometricFilesCount: number;
   acceptSuggestedField: (recordId: string, field: string) => void;
@@ -355,6 +356,11 @@ const ruleApplies = (record: RawRecord, condition?: RuleCondition) => {
   return evaluateFieldCondition(record.values[condition.column] ?? '', condition.operator, condition.value);
 };
 
+const ruleMatchesRowScope = (record: RawRecord, rule: RuleConfig) => {
+  if (!rule.applyToRows?.length) return true;
+  return rule.applyToRows.includes(record.sourceRow);
+};
+
 const columnLookup = (columns: ColumnProfile[]) => new Map(columns.map((column) => [column.key, column.label]));
 
 const buildColumns = (records: RawRecord[], labelsByKey: Map<string, string>): ColumnProfile[] => {
@@ -521,7 +527,7 @@ const buildDuplicateInsights = (
 
       const groups = new Map<string, RawRecord[]>();
       records.forEach((record) => {
-        if (!ruleApplies(record, rule.when)) return;
+        if (!ruleApplies(record, rule.when) || !ruleMatchesRowScope(record, rule)) return;
         const parts = activeColumns.map((column) => record.values[column]?.trim() ?? '');
         if (parts.some((part) => !part)) return;
         const key = parts.map((part) => part.toLowerCase()).join('||');
@@ -670,6 +676,10 @@ export const PipelineProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     throw new Error('Unsupported file type. Allowed: CSV, XLSX/XLS, PDF, JSON, TXT, TSV.');
   };
 
+  const setRawDataset = (dataset: ImportedDataset) => {
+    dispatch({ type: 'SET_RAW_DATA', payload: dataset });
+  };
+
   const runPipeline = async (
     dataset: ImportedDataset = { records: state.rawRecords, columns: state.columns },
     biometricPayload: File[] = biometricFiles,
@@ -719,7 +729,7 @@ export const PipelineProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           state.ruleConfig
             .filter((rule) => rule.enabled && rule.scope !== 'DUPLICATE')
             .forEach((rule) => {
-              if (!ruleApplies(record, rule.when)) return;
+              if (!ruleApplies(record, rule.when) || !ruleMatchesRowScope(record, rule)) return;
 
               if (rule.scope === 'FIELD') {
                 const fieldValue = workingValues[rule.targetColumn] ?? '';
@@ -1114,6 +1124,7 @@ export const PipelineProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         runPipeline,
         updateRuleConfig,
         parseUploadFile,
+        setRawDataset,
         setBiometricFiles,
         biometricFilesCount: biometricFiles.length,
         acceptSuggestedField,

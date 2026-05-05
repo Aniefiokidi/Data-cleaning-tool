@@ -129,6 +129,7 @@ export interface RuleConfig {
   compareColumn?: string;
   columns?: string[];
   when?: RuleCondition;
+  applyToRows?: number[];
 }
 
 export interface DuplicatePair {
