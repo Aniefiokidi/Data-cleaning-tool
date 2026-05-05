@@ -40,6 +40,24 @@ const ScoreRing: React.FC<{ score: number }> = ({ score }) => {
   );
 };
 
+const classifyDiagnostics = (diagnostics: string[]) => {
+  const positives: string[] = [];
+  const issues: string[] = [];
+  const actions: string[] = [];
+
+  diagnostics.forEach((item) => {
+    const text = item.trim();
+    const lower = text.toLowerCase();
+    if (!text) return;
+
+    if (/pass|good|valid|ok|clear|acceptable/.test(lower)) positives.push(text);
+    else if (/should|recommend|improve|increase|retake|use|ensure|try|need/.test(lower)) actions.push(text);
+    else issues.push(text);
+  });
+
+  return { positives, issues, actions };
+};
+
 interface Props {
   open: boolean;
   onClose: () => void;
@@ -120,7 +138,9 @@ export const RecordDetailModal: React.FC<Props> = ({ open, onClose, record, onAc
 
             <div className="rounded-[28px] border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-950/60">
               <h3 className="text-lg font-semibold text-slate-950 dark:text-white">Biometric quality</h3>
-              {record.biometricQuality ? (
+              {record.biometricQuality ? (() => {
+                const diagnosticGroups = classifyDiagnostics(record.biometricQuality.diagnostics);
+                return (
                 <div className="mt-4 space-y-4">
                   <div className="rounded-2xl border border-slate-200 p-4 dark:border-slate-800">
                     <p className="font-semibold text-slate-950 dark:text-white">
@@ -129,6 +149,21 @@ export const RecordDetailModal: React.FC<Props> = ({ open, onClose, record, onAc
                     <p className="mt-2 text-xs text-slate-500">Provider: {record.biometricQuality.provider}</p>
                     {record.biometricQuality.sourceFile ? <p className="mt-1 text-xs text-slate-500">Source: {record.biometricQuality.sourceFile}</p> : null}
                     <p className="mt-2 text-xs text-slate-500">{record.biometricQuality.diagnostics.join(' | ')}</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-900/40 dark:bg-emerald-900/20">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700 dark:text-emerald-300">What looks good</p>
+                      <p className="mt-2 text-xs text-slate-700 dark:text-slate-200">{diagnosticGroups.positives.length ? diagnosticGroups.positives.join(' • ') : 'No explicit pass notes were provided by OpenBQ for this file.'}</p>
+                    </div>
+                    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-900/40 dark:bg-amber-900/20">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700 dark:text-amber-300">What is wrong</p>
+                      <p className="mt-2 text-xs text-slate-700 dark:text-slate-200">{diagnosticGroups.issues.length ? diagnosticGroups.issues.join(' • ') : 'No major issue text was detected in the OpenBQ diagnostics.'}</p>
+                    </div>
+                    <div className="rounded-2xl border border-sky-200 bg-sky-50 p-3 dark:border-sky-900/40 dark:bg-sky-900/20">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700 dark:text-sky-300">What user should do</p>
+                      <p className="mt-2 text-xs text-slate-700 dark:text-slate-200">{diagnosticGroups.actions.length ? diagnosticGroups.actions.join(' • ') : 'Capture a sharper image with steady lighting, centered subject, and full focus.'}</p>
+                    </div>
                   </div>
 
                   {record.biometricQuality.previewImageUrl ? (
@@ -142,7 +177,8 @@ export const RecordDetailModal: React.FC<Props> = ({ open, onClose, record, onAc
                     </div>
                   ) : null}
                 </div>
-              ) : (
+                );
+              })() : (
                 <p className="mt-4 text-sm text-slate-500">No biometric assessment is attached to this record.</p>
               )}
             </div>
