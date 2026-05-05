@@ -23,10 +23,8 @@ export const Sidebar: React.FC<Props> = ({ dark, toggleDark }) => {
   return (
     <aside className="hidden border-r border-slate-200 bg-white lg:fixed lg:inset-y-0 lg:left-0 lg:flex lg:w-72 lg:flex-col dark:border-slate-800 dark:bg-slate-900">
       <div className="border-b border-slate-200 px-6 py-6 dark:border-slate-800">
-        <p className="text-xs font-semibold uppercase tracking-[0.26em] text-slate-500">Data Cleaning Lab</p>
-        <h1 className="mt-3 text-2xl font-semibold text-slate-950 dark:text-white">Simple rule-based cleaning</h1>
-        <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-          Upload a file, inspect the columns, add rules in plain language, then review highlighted issues in the results table.
+        <p className="text-sm font-medium leading-6 text-slate-600 dark:text-slate-300">
+          Upload a file, set simple rules, and review issues clearly in the results table.
         </p>
       </div>
 

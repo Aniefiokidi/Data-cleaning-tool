@@ -140,9 +140,9 @@ export const RulesPanel = () => {
     <div className="space-y-6">
       <section className="rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Quick start</p>
-        <h2 className="mt-2 text-3xl font-semibold text-slate-950 dark:text-white">Build rules in plain language</h2>
+        <h2 className="mt-2 text-3xl font-semibold text-slate-950 dark:text-white">Create clear data cleaning rules</h2>
         <p className="mt-3 max-w-3xl text-sm text-slate-600 dark:text-slate-300">
-          Keep the flow simple: pick a column, choose the kind of check, decide how serious a failure is, then run the pipeline. Anyone using the tool should be able to understand the rule without needing technical terms.
+          Use the steps below: choose what to validate, set the rule, and preview the sentence before saving. The form is designed so non-technical users can set rules safely.
         </p>
 
         <div className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
@@ -174,7 +174,7 @@ export const RulesPanel = () => {
                 onClick={() => setScope(entry)}
                 type="button"
               >
-                {entry === 'FIELD' ? 'Single column' : entry === 'CROSS_FIELD' ? 'Compare columns' : 'Find duplicates'}
+                {entry === 'FIELD' ? 'Step 1: Single column' : entry === 'CROSS_FIELD' ? 'Step 2: Compare columns' : 'Step 3: Duplicates'}
               </button>
             ))}
           </div>
@@ -187,7 +187,7 @@ export const RulesPanel = () => {
             <div className="mt-6 space-y-6">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <label className="space-y-2">
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Rule name</span>
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Rule title</span>
                   <input
                     className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
                     placeholder="Example: Email is required"
@@ -221,7 +221,7 @@ export const RulesPanel = () => {
               {scope === 'FIELD' ? (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_1fr]">
                   <label className="space-y-2">
-                    <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Check to run</span>
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Validation type</span>
                     <select className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800" value={fieldOperator} onChange={(event) => setFieldOperator(event.target.value as FieldRuleOperator)}>
                       {FIELD_OPERATORS.map((operator) => (
                         <option key={operator.value} value={operator.value}>{operator.label}</option>
@@ -230,7 +230,7 @@ export const RulesPanel = () => {
                     {selectedOperator ? <p className="text-xs text-slate-500">{selectedOperator.hint}</p> : null}
                   </label>
                   <label className="space-y-2">
-                    <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Value to compare against</span>
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Expected value (if needed)</span>
                     <input
                       className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-800"
                       disabled={!doesFieldOperatorNeedValue(fieldOperator)}
@@ -279,6 +279,15 @@ export const RulesPanel = () => {
                 </div>
               ) : null}
 
+              <div className="rounded-2xl border border-sky-100 bg-sky-50/70 p-4 text-sm text-slate-700 dark:border-sky-900/40 dark:bg-sky-900/20 dark:text-slate-200">
+                <p className="font-semibold">How to choose a rule type</p>
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-slate-600 dark:text-slate-300">
+                  <li><strong>Single column:</strong> Check one field like email, phone, ID, or required values.</li>
+                  <li><strong>Compare columns:</strong> Verify two fields agree (for example Start Date less than End Date).</li>
+                  <li><strong>Duplicates:</strong> Catch repeated people, IDs, or repeated column combinations.</li>
+                </ul>
+              </div>
+
               <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/70">
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Preview</p>
                 <p className="mt-2 text-sm text-slate-700 dark:text-slate-200">
@@ -300,11 +309,11 @@ export const RulesPanel = () => {
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
-                <button className="rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 dark:bg-slate-100 dark:text-slate-950" disabled={!canSaveRule} onClick={saveRule} type="button">
+                <button className="rounded-full bg-sky-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-sky-500 dark:hover:bg-sky-400" disabled={!canSaveRule} onClick={saveRule} type="button">
                   Save rule
                 </button>
-                <button className="rounded-full border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200" onClick={resetBuilder} type="button">
-                  Clear form
+                <button className="rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800" onClick={resetBuilder} type="button">
+                  Reset form
                 </button>
               </div>
             </div>
@@ -353,7 +362,7 @@ export const RulesPanel = () => {
           </div>
         ) : (
           <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900">
-            No rules yet. Start with a quick template or create one manually above.
+            No rules saved yet. Use a quick template or follow the guided steps above.
           </div>
         )}
       </section>
