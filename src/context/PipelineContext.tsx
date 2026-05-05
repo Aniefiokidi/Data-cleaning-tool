@@ -356,6 +356,11 @@ const ruleApplies = (record: RawRecord, condition?: RuleCondition) => {
   return evaluateFieldCondition(record.values[condition.column] ?? '', condition.operator, condition.value);
 };
 
+const ruleMatchesRowScope = (record: RawRecord, rule: RuleConfig) => {
+  if (!rule.applyToRows?.length) return true;
+  return rule.applyToRows.includes(record.sourceRow);
+};
+
 const columnLookup = (columns: ColumnProfile[]) => new Map(columns.map((column) => [column.key, column.label]));
 
 const buildColumns = (records: RawRecord[], labelsByKey: Map<string, string>): ColumnProfile[] => {
@@ -522,7 +527,7 @@ const buildDuplicateInsights = (
 
       const groups = new Map<string, RawRecord[]>();
       records.forEach((record) => {
-        if (!ruleApplies(record, rule.when)) return;
+        if (!ruleApplies(record, rule.when) || !ruleMatchesRowScope(record, rule)) return;
         const parts = activeColumns.map((column) => record.values[column]?.trim() ?? '');
         if (parts.some((part) => !part)) return;
         const key = parts.map((part) => part.toLowerCase()).join('||');
@@ -724,7 +729,7 @@ export const PipelineProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           state.ruleConfig
             .filter((rule) => rule.enabled && rule.scope !== 'DUPLICATE')
             .forEach((rule) => {
-              if (!ruleApplies(record, rule.when)) return;
+              if (!ruleApplies(record, rule.when) || !ruleMatchesRowScope(record, rule)) return;
 
               if (rule.scope === 'FIELD') {
                 const fieldValue = workingValues[rule.targetColumn] ?? '';
